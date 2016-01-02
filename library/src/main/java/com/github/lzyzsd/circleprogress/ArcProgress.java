@@ -280,7 +280,9 @@ public class ArcProgress extends View {
         paint.setColor(unfinishedStrokeColor);
         canvas.drawArc(rectF, startAngle, arcAngle, false, paint);
         paint.setColor(finishedStrokeColor);
-        canvas.drawArc(rectF, finishedStartAngle, finishedSweepAngle, false, paint);
+        //QUICKFIX -> progress == 0 lets the arc be a circle
+        if(progress != 0)
+            canvas.drawArc(rectF, finishedStartAngle, finishedSweepAngle, false, paint);
 
         String text = String.valueOf(getProgress());
         if (!TextUtils.isEmpty(text)) {
