@@ -131,7 +131,7 @@ public class ViewPagerActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_view_pager, container, false);
             final ArcProgress arcProgress = (ArcProgress) rootView.findViewById(R.id.arc_progress);
-            arcProgress.setProgress(20);
+            arcProgress.setProgress(0);
             ((Button) rootView.findViewById(R.id.button_increase)).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

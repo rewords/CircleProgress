@@ -36,11 +36,11 @@ public class MyActivity extends ActionBarActivity {
                     public void run() {
                         donutProgress.setProgress(donutProgress.getProgress() + 1);
                         circleProgress.setProgress(circleProgress.getProgress() + 1);
-                        arcProgress.setProgress(arcProgress.getProgress() + 1);
+                        arcProgress.setProgressSmooth(arcProgress.getProgress() + 10);
                     }
                 });
             }
-        }, 1000, 100);
+        }, 1000, 1000);
     }
 
     @Override

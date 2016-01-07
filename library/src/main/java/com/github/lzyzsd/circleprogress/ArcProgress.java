@@ -1,5 +1,7 @@
 package com.github.lzyzsd.circleprogress;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -12,11 +14,15 @@ import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 
 /**
  * Created by bruce on 11/6/14.
  */
 public class ArcProgress extends View {
+    private static final int PROGRESS_MULTIPLICATOR = 1000;
+    private static final int DEFAULT_PROGRESS_ANIMATION_TIME = 200;
+
     private Paint paint;
     protected Paint textPaint;
 
@@ -35,6 +41,7 @@ public class ArcProgress extends View {
     private float arcAngle;
     private String suffixText = "%";
     private float suffixTextPadding;
+    private int progressAnimationDuration = DEFAULT_PROGRESS_ANIMATION_TIME;
 
     private float arcBottomHeight;
 
@@ -101,6 +108,7 @@ public class ArcProgress extends View {
         arcAngle = attributes.getFloat(R.styleable.ArcProgress_arc_angle, default_arc_angle);
         setMax(attributes.getInt(R.styleable.ArcProgress_arc_max, default_max));
         setProgress(attributes.getInt(R.styleable.ArcProgress_arc_progress, 0));
+        setProgressanimationDuration(attributes.getInt(R.styleable.ArcProgress_arc_anim_duration, DEFAULT_PROGRESS_ANIMATION_TIME));
         strokeWidth = attributes.getDimension(R.styleable.ArcProgress_arc_stroke_width, default_stroke_width);
         suffixTextSize = attributes.getDimension(R.styleable.ArcProgress_arc_suffix_text_size, default_suffix_text_size);
         suffixText = TextUtils.isEmpty(attributes.getString(R.styleable.ArcProgress_arc_suffix_text)) ? default_suffix_text : attributes.getString(R.styleable.ArcProgress_arc_suffix_text);
@@ -156,25 +164,50 @@ public class ArcProgress extends View {
         this.invalidate();
     }
 
+    public int getProgressAnimationDuration() {
+        return this.progressAnimationDuration;
+    }
+
+    public void setProgressanimationDuration(int millis) {
+        this.progressAnimationDuration = millis < 0 ? 0 : millis;
+    }
+
+    public void setProgressSmooth(int progress) {
+        if (progress > max)
+            progress %= max;
+        ObjectAnimator anim = ObjectAnimator.ofInt(this, "realProgress", this.progress, progress * PROGRESS_MULTIPLICATOR);
+        anim.setDuration(progressAnimationDuration);
+        anim.setInterpolator(new AccelerateDecelerateInterpolator());
+        anim.start();
+    }
+
+    private void setRealProgress(int progress) {
+        this.progress = progress;
+        if (this.progress > max) {
+            this.progress %= max;
+        }
+        invalidate();
+    }
+
     public int getProgress() {
-        return progress;
+        return progress / PROGRESS_MULTIPLICATOR;
     }
 
     public void setProgress(int progress) {
-        this.progress = progress;
-        if (this.progress > getMax()) {
-            this.progress %= getMax();
+        this.progress = progress * PROGRESS_MULTIPLICATOR;
+        if (this.progress > max) {
+            this.progress %= max;
         }
         invalidate();
     }
 
     public int getMax() {
-        return max;
+        return max / PROGRESS_MULTIPLICATOR;
     }
 
     public void setMax(int max) {
         if (max > 0) {
-            this.max = max;
+            this.max = max * PROGRESS_MULTIPLICATOR;
             invalidate();
         }
     }
@@ -275,7 +308,7 @@ public class ArcProgress extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         float startAngle = 270 - arcAngle / 2f;
-        float finishedSweepAngle = progress / (float) getMax() * arcAngle;
+        float finishedSweepAngle = getProgress() / (float) getMax() * arcAngle;
         float finishedStartAngle = startAngle;
         paint.setColor(unfinishedStrokeColor);
         canvas.drawArc(rectF, startAngle, arcAngle, false, paint);
